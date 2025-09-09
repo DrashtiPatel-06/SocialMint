@@ -1,8 +1,11 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv"
+
+dotenv.config();
 
 export const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb://localhost:27017/socialmintdb");
+    await mongoose.connect(process.env.CONNECTION_STRING);
     console.log("Database connected");
   } catch (error) {
     console.error("DB connection error:", error);
