@@ -9,4 +9,4 @@ const nftSchema = new mongoose.Schema({
     txid: {type:String, required:true},
     created_at:{type:Date, default:Date.now}
 })  
-export default mongoose.model("nft",nftSchema);
+export default mongoose.model("NFT",nftSchema);

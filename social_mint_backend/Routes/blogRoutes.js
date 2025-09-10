@@ -1,11 +1,11 @@
 import express from "express"
-import blogs from "../Models/Blog.js"
+import Blog from "../Models/Blog.js"
 
 const router = express.Router();
 
 router.post("/",async(req,res)=>{
     try {
-        const blog = new blogs(req.body);
+        const blog = new Blog(req.body);
         await blog.save();
         res.status(201).json(blog)
     } catch (error) {
@@ -15,7 +15,7 @@ router.post("/",async(req,res)=>{
 
 router.get("/",async(req,res)=>{
     try {
-        const blog = await blogs.find();
+        const blog = await Blog.find();
         res.status(201).json(blog)
     } catch (error) {
         res.status(400).json({error:error.message})
@@ -24,7 +24,7 @@ router.get("/",async(req,res)=>{
 
 router.get("/:id",async(req,res)=>{
     try {
-        const blog = await blogs.findById(req.params.id);
+        const blog = await Blog.findById(req.params.id);
         if(!blog){
             return res.status(400).json({message:"Blog not found!"});
         }
@@ -36,7 +36,7 @@ router.get("/:id",async(req,res)=>{
 
 router.put("/:id",async(req,res)=>{
     try {
-        const blog = await blogs.findByIdAndUpdate(req.params.id,req.body,{new:true});
+        const blog = await Blog.findByIdAndUpdate(req.params.id,req.body,{new:true});
         if(!blog){
             return res.status(400).json({message:"Blog not found!"});
         }
@@ -48,7 +48,7 @@ router.put("/:id",async(req,res)=>{
 
 router.delete("/:id",async(req,res)=>{
     try {
-        const nft = await blogs.findByIdAndDelete(req.params.id);
+        const nft = await Blog.findByIdAndDelete(req.params.id);
         if(!nft){
             return res.status(400).json({message:"Blog not found!"});
         }

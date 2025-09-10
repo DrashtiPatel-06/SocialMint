@@ -8,4 +8,4 @@ const blogSchema = new mongoose.Schema({
     txid: {type:String, required:true},
     created_at:{type:Date, default:Date.now}
 })  
-export default mongoose.model("blog",blogSchema);
+export default mongoose.model("Blog",blogSchema);

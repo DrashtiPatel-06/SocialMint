@@ -1,11 +1,11 @@
 import express from "express"
-import nfts from "../Models/Nft.js"
+import NFT from "../Models/Nft.js"
 
 const router = express.Router();
 
 router.post("/",async(req,res)=>{
     try {
-        const nft = new nfts(req.body);
+        const nft = new NFT(req.body);
         await nft.save();
         res.status(201).json(nft)
     } catch (error) {
@@ -15,7 +15,7 @@ router.post("/",async(req,res)=>{
 
 router.get("/",async(req,res)=>{
     try {
-        const nft = await nfts.find();
+        const nft = await NFT.find();
         res.status(201).json(nft)
     } catch (error) {
         res.status(400).json({error:error.message})
@@ -24,7 +24,7 @@ router.get("/",async(req,res)=>{
 
 router.get("/:id",async(req,res)=>{
     try {
-        const nft = await nfts.findById(req.params.id);
+        const nft = await NFT.findById(req.params.id);
         if(!nft){
             return res.status(400).json({message:"NFT not found!"});
         }
@@ -36,7 +36,7 @@ router.get("/:id",async(req,res)=>{
 
 router.put("/:id",async(req,res)=>{
     try {
-        const nft = await nfts.findByIdAndUpdate(req.params.id,req.body,{new:true});
+        const nft = await NFT.findByIdAndUpdate(req.params.id,req.body,{new:true});
         if(!nft){
             return res.status(400).json({message:"NFT not found!"});
         }
@@ -48,7 +48,7 @@ router.put("/:id",async(req,res)=>{
 
 router.delete("/:id",async(req,res)=>{
     try {
-        const nft = await nfts.findByIdAndDelete(req.params.id);
+        const nft = await NFT.findByIdAndDelete(req.params.id);
         if(!nft){
             return res.status(400).json({message:"NFT not found!"});
         }
