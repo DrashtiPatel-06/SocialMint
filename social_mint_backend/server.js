@@ -6,6 +6,7 @@ import nftRoutes from "./Routes/nftRoutes.js"
 import blogRoutes from "./Routes/blogRoutes.js"
 import eventRoutes from "./Routes/eventRoutes.js"
 import eventAttendanceRoutes from "./Routes/eventAttendanceRoutes.js"
+import likeRoutes from "./Routes/likeRoutes.js"
 
 const app = express();
 app.use(cors());
@@ -18,6 +19,7 @@ app.use("/nfts",nftRoutes);
 app.use("/blogs",blogRoutes);
 app.use("/events",eventRoutes);
 app.use("/eventAttendances",eventAttendanceRoutes);
+app.use("/likes",likeRoutes)
 
 const PORT = 5000;
 
