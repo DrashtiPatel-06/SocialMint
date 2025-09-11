@@ -8,6 +8,7 @@ import eventRoutes from "./Routes/eventRoutes.js"
 import eventAttendanceRoutes from "./Routes/eventAttendanceRoutes.js"
 import likeRoutes from "./Routes/likeRoutes.js"
 import commentRoutes from "./Routes/commentRoutes.js"
+import chatRoutes from "./Routes/chatRoutes.js"
 
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/events",eventRoutes);
 app.use("/eventAttendances",eventAttendanceRoutes);
 app.use("/likes",likeRoutes)
 app.use("/comments",commentRoutes)
+app.use("/chats",chatRoutes)
 
 const PORT = 5000;
 
