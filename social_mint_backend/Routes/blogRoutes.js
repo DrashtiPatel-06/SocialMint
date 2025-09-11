@@ -48,8 +48,8 @@ router.put("/:id",async(req,res)=>{
 
 router.delete("/:id",async(req,res)=>{
     try {
-        const nft = await Blog.findByIdAndDelete(req.params.id);
-        if(!nft){
+        const blog = await Blog.findByIdAndDelete(req.params.id);
+        if(!blog){
             return res.status(400).json({message:"Blog not found!"});
         }
          res.json({ message: "Blog deleted" });

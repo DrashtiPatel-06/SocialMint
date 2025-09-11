@@ -48,8 +48,8 @@ router.put("/:id",async(req,res)=>{
 
 router.delete("/:id",async(req,res)=>{
     try {
-        const nft = await Event.findByIdAndDelete(req.params.id);
-        if(!nft){
+        const event = await Event.findByIdAndDelete(req.params.id);
+        if(!event){
             return res.status(400).json({message:"Event not found!"});
         }
          res.json({ message: "Event deleted" });

@@ -5,6 +5,7 @@ import userRoutes from "./Routes/userRoutes.js"
 import nftRoutes from "./Routes/nftRoutes.js"
 import blogRoutes from "./Routes/blogRoutes.js"
 import eventRoutes from "./Routes/eventRoutes.js"
+import eventAttendanceRoutes from "./Routes/eventAttendanceRoutes.js"
 
 const app = express();
 app.use(cors());
@@ -16,6 +17,7 @@ app.use("/users",userRoutes);
 app.use("/nfts",nftRoutes);
 app.use("/blogs",blogRoutes);
 app.use("/events",eventRoutes);
+app.use("/eventAttendances",eventAttendanceRoutes);
 
 const PORT = 5000;
 
