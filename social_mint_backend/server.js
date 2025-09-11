@@ -7,6 +7,8 @@ import blogRoutes from "./Routes/blogRoutes.js"
 import eventRoutes from "./Routes/eventRoutes.js"
 import eventAttendanceRoutes from "./Routes/eventAttendanceRoutes.js"
 import likeRoutes from "./Routes/likeRoutes.js"
+import commentRoutes from "./Routes/commentRoutes.js"
+
 
 const app = express();
 app.use(cors());
@@ -20,6 +22,7 @@ app.use("/blogs",blogRoutes);
 app.use("/events",eventRoutes);
 app.use("/eventAttendances",eventAttendanceRoutes);
 app.use("/likes",likeRoutes)
+app.use("/comments",commentRoutes)
 
 const PORT = 5000;
 
