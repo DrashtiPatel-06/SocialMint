@@ -8,6 +8,7 @@ import EventsPage from "./Pages/EventsPage"
 import ChatsPage from "./Pages/ChatsPage"
 import ProfilePage from "./Pages/ProfilePage"
 import Navbar from "./Pages/Navbar"
+import PublicProfilePage from "./Pages/PublicProfilePage"
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/chats" element={<ChatsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:username" element={<PublicProfilePage />} />
         </Routes>
       </main>
     </div>

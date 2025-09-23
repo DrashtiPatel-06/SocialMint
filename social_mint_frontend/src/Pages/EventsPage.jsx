@@ -7,7 +7,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Link } from "react-router-dom";
 
 export default function EventPage() {
   const sampleEvents = [
@@ -51,25 +53,27 @@ export default function EventPage() {
   const [sortOrder, setSortOrder] = useState("date");
   const [shareEvent, setShareEvent] = useState(null);
   const [calendarEvent, setCalendarEvent] = useState(null);
+  const [liked, setLiked] = useState({});
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 2;
 
   // Like toggle
-  const toggleLike = (id) => {
-    setEvents((prev) =>
-      prev.map((e) =>
-        e.id === id
-          ? {
-              ...e,
-              liked: !e.liked,
-              likes: e.liked ? e.likes - 1 : e.likes + 1,
-            }
-          : e
-      )
-    );
-  };
+  function toggleLike(eventId) {
+    setLiked((prev) => {
+      const isLiked = !prev[eventId];
+      const updated = { ...prev, [eventId]: isLiked };
+
+      setEvents((es) =>
+        es.map((e) =>
+          e.id === eventId ? { ...e, likes: e.likes + (isLiked ? 1 : -1) } : e
+        )
+      );
+
+      return updated;
+    });
+  }
 
   // Reset filters
   const clearFilters = () => {
@@ -92,6 +96,34 @@ export default function EventPage() {
     (currentPage - 1) * perPage,
     currentPage * perPage
   );
+
+  // Share helpers
+  const copyLink = (event) => {
+    navigator.clipboard.writeText(window.location.href + "#" + event.id);
+    alert("Link copied!");
+  };
+
+  const shareToWhatsApp = (event) => {
+    const url = `https://wa.me/?text=${encodeURIComponent(
+      event.title + " - " + window.location.href + "#" + event.id
+    )}`;
+    window.open(url, "_blank");
+  };
+
+  const tryNativeShare = (event) => {
+    if (navigator.share) {
+      navigator.share({
+        title: event.title,
+        url: window.location.href + "#" + event.id,
+      });
+    } else {
+      alert("Native share not supported");
+    }
+  };
+
+  const shareToChat = (event) => {
+    alert(`Shared ${event.title} in chat!`);
+  };
 
   // Calendar links
   const getCalendarLinks = (event) => {
@@ -176,7 +208,7 @@ END:VCALENDAR`;
                     <AvatarFallback>{event.username[0]}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="font-medium">{event.username}</div>
+                    <Link to={`/profile/${event.username}`} className="font-medium">{event.username}</Link>
                     <div className="text-xs text-slate-500">
                       {new Date(event.date).toLocaleString()}
                     </div>
@@ -187,21 +219,37 @@ END:VCALENDAR`;
                 <p className="text-slate-600">{event.description}</p>
 
                 <div className="flex items-center gap-3 mt-3">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className={event.liked ? "text-red-500" : "text-slate-600"}
+                  <button
+                    aria-pressed={!!liked[event.id]}
                     onClick={() => toggleLike(event.id)}
+                    className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
+                      liked[event.id]
+                        ? "text-red-600 border-red-200 bg-red-50"
+                        : "text-slate-700 border-slate-100 bg-white"
+                    }`}
                   >
-                    ❤️ {event.likes}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill={liked[event.id] ? "currentColor" : "none"}
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 21s-8-7.4-8-11a4 4 0 018-2 4 4 0 018 2c0 3.6-8 11-8 11z"
+                      />
+                    </svg>
+                    <span className="text-sm">{event.likes}</span>
+                  </button>
+                  <button
                     onClick={() => setShareEvent(event)}
+                    className="px-3 py-1 rounded-full border text-sm"
                   >
-                    🔗 Share
-                  </Button>
+                    Share
+                  </button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -249,19 +297,52 @@ END:VCALENDAR`;
           <DialogHeader>
             <DialogTitle>Share Event</DialogTitle>
           </DialogHeader>
-          <div className="flex gap-3">
-            <Button size="sm">📨 Chat</Button>
-            <Button size="sm">📱 WhatsApp</Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                alert("Link copied!");
-              }}
-            >
-              📋 Copy Link
+
+          {shareEvent && (
+            <div className="space-y-4">
+              <div className="text-sm">Choose how to share:</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => {
+                    shareToChat(shareEvent);
+                    setShareEvent(null);
+                  }}
+                >
+                  Share to Chat
+                </Button>
+                <Button
+                  onClick={() => {
+                    shareToWhatsApp(shareEvent);
+                    setShareEvent(null);
+                  }}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => {
+                    copyLink(shareEvent);
+                    setShareEvent(null);
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  onClick={() => {
+                    tryNativeShare(shareEvent);
+                    setShareEvent(null);
+                  }}
+                >
+                  Native Share
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setShareEvent(null)}>
+              Close
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

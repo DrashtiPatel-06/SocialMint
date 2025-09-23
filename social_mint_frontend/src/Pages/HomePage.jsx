@@ -11,11 +11,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link } from "react-router-dom";
 
 export default function SocialMintHomepage() {
   // sample data
@@ -97,6 +94,11 @@ export default function SocialMintHomepage() {
   const [blogsFilter, setBlogsFilter] = useState("all");
   const [chatMessages, setChatMessages] = useState([]);
 
+  const currentUser = {
+    username: "drashti",
+    profilePic: "https://i.pravatar.cc/40?img=8",
+  };
+
   // handlers
   function toggleLike(postId) {
     setLiked((prev) => {
@@ -105,9 +107,7 @@ export default function SocialMintHomepage() {
 
       setPosts((ps) =>
         ps.map((p) =>
-          p.id === postId
-            ? { ...p, likes: p.likes + (isLiked ? 1 : -1) }
-            : p
+          p.id === postId ? { ...p, likes: p.likes + (isLiked ? 1 : -1) } : p
         )
       );
 
@@ -123,7 +123,12 @@ export default function SocialMintHomepage() {
     if (!text) return;
     setComments((prev) => {
       const list = prev[postId] ? [...prev[postId]] : [];
-      list.push({ id: `${postId}-c-${Date.now()}`, text });
+      list.push({
+        id: `${postId}-c-${Date.now()}`,
+        text,
+        username: currentUser.username,
+        profilePic: currentUser.profilePic,
+      });
       return { ...prev, [postId]: list };
     });
   }
@@ -166,7 +171,9 @@ export default function SocialMintHomepage() {
         console.warn("Native share cancelled or failed", e);
       }
     } else {
-      alert("Your device doesn't support native sharing. Try Copy or WhatsApp.");
+      alert(
+        "Your device doesn't support native sharing. Try Copy or WhatsApp."
+      );
     }
   }
 
@@ -250,7 +257,7 @@ export default function SocialMintHomepage() {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-medium">{post.username}</div>
+                      <Link to={`/profile/${post.username}`} className="font-medium" >{post.username}</Link>
                       <div className="text-xs text-slate-500">
                         {post.postedAt}
                       </div>
@@ -320,7 +327,7 @@ export default function SocialMintHomepage() {
                         onClick={() => toggleCommentSection(post.id)}
                         className="absolute -top-3 right-3 rounded-full bg-white border px-2 py-1 text-xs"
                       >
-                        Close
+                        ✖
                       </button>
                       <div className="space-y-2">
                         <div>
@@ -340,9 +347,28 @@ export default function SocialMintHomepage() {
                           {(comments[post.id] || []).map((c) => (
                             <div
                               key={c.id}
-                              className="bg-slate-50 p-2 rounded"
+                              className="bg-slate-50 p-2 rounded flex items-start gap-2"
                             >
-                              <div className="text-sm">{c.text}</div>
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage
+                                  src={c.profilePic}
+                                  alt={c.username}
+                                />
+                                <AvatarFallback>
+                                  {c.username.slice(0, 1)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <Link
+                                 to={`/profile/${post.username}`}
+                                  className="font-medium text-sm hover:underline"
+                                >
+                                  {c.username}
+                                </Link>
+                                <div className="text-sm text-slate-700">
+                                  {c.text}
+                                </div>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -431,9 +457,7 @@ export default function SocialMintHomepage() {
                   </Button>
                   <Button
                     onClick={() => {
-                      tryNativeShare(
-                        posts.find((p) => p.id === showShareFor)
-                      );
+                      tryNativeShare(posts.find((p) => p.id === showShareFor));
                       setShowShareFor(null);
                     }}
                   >
@@ -444,10 +468,7 @@ export default function SocialMintHomepage() {
             )}
 
             <DialogFooter>
-              <Button
-                variant="secondary"
-                onClick={() => setShowShareFor(null)}
-              >
+              <Button variant="secondary" onClick={() => setShowShareFor(null)}>
                 Close
               </Button>
             </DialogFooter>

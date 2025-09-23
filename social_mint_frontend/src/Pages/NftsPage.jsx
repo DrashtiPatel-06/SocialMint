@@ -9,11 +9,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link } from "react-router-dom";
 
 export default function NFTPage() {
   // sample NFT posts
@@ -50,6 +47,12 @@ export default function NFTPage() {
     },
   ];
 
+  // simulate current user
+  const currentUser = {
+    username: "drashti",
+    profilePic: "https://i.pravatar.cc/40?img=8",
+  };
+
   const [posts, setPosts] = useState(samplePosts);
   const [liked, setLiked] = useState({});
   const [commentOpen, setCommentOpen] = useState({});
@@ -73,9 +76,7 @@ export default function NFTPage() {
 
       setPosts((ps) =>
         ps.map((p) =>
-          p.id === postId
-            ? { ...p, likes: p.likes + (isLiked ? 1 : -1) }
-            : p
+          p.id === postId ? { ...p, likes: p.likes + (isLiked ? 1 : -1) } : p
         )
       );
 
@@ -91,7 +92,12 @@ export default function NFTPage() {
     if (!text) return;
     setComments((prev) => {
       const list = prev[postId] ? [...prev[postId]] : [];
-      list.push({ id: `${postId}-c-${Date.now()}`, text });
+      list.push({
+        id: `${postId}-c-${Date.now()}`,
+        text,
+        username: currentUser.username,
+        profilePic: currentUser.profilePic,
+      });
       return { ...prev, [postId]: list };
     });
   }
@@ -215,15 +221,16 @@ export default function NFTPage() {
               <header className="flex items-center gap-3 mb-3">
                 <Avatar>
                   <AvatarImage src={post.profilePic} alt={post.username} />
-                  <AvatarFallback>
-                    {post.username.slice(0, 1)}
-                  </AvatarFallback>
+                  <AvatarFallback>{post.username.slice(0, 1)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-medium">{post.username}</div>
-                  <div className="text-xs text-slate-500">
-                    {post.postedAt}
-                  </div>
+                  <Link
+                    to={`/profile/${post.username}`}
+                    className="font-medium"
+                  >
+                    {post.username}
+                  </Link>
+                  <div className="text-xs text-slate-500">{post.postedAt}</div>
                 </div>
               </header>
 
@@ -241,13 +248,27 @@ export default function NFTPage() {
                 <button
                   aria-pressed={!!liked[post.id]}
                   onClick={() => toggleLike(post.id)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
+                  className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
                     liked[post.id]
                       ? "text-red-600 border-red-200 bg-red-50"
-                      : "text-slate-700 border-slate-200 bg-white"
+                      : "text-slate-700 border-slate-100 bg-white"
                   }`}
                 >
-                  ❤️ <span className="text-sm">{post.likes}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill={liked[post.id] ? "currentColor" : "none"}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 21s-8-7.4-8-11a4 4 0 018-2 4 4 0 018 2c0 3.6-8 11-8 11z"
+                    />
+                  </svg>
+                  <span className="text-sm">{post.likes}</span>
                 </button>
 
                 <button
@@ -258,7 +279,7 @@ export default function NFTPage() {
                 </button>
 
                 <button
-                  onClick={() => setShowShareFor(post.id)}
+                  onClick={() => setShowShareFor(post)}
                   className="px-3 py-1 rounded-full border text-sm"
                 >
                   Share
@@ -271,7 +292,7 @@ export default function NFTPage() {
                     onClick={() => toggleCommentSection(post.id)}
                     className="absolute -top-3 right-3 px-2 py-1 text-xs bg-white border rounded-full"
                   >
-                    Close
+                    ✖
                   </button>
                   <Input
                     placeholder="Write a comment..."
@@ -282,10 +303,27 @@ export default function NFTPage() {
                       }
                     }}
                   />
-                  <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
                     {(comments[post.id] || []).map((c) => (
-                      <div key={c.id} className="bg-slate-50 p-2 rounded">
-                        {c.text}
+                      <div
+                        key={c.id}
+                        className="bg-slate-50 p-2 rounded flex items-start gap-2"
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={c.profilePic} alt={c.username} />
+                          <AvatarFallback>
+                            {c.username.slice(0, 1)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <Link
+                            to={`/profile/${post.username}`}
+                            className="font-medium text-sm hover:underline"
+                          >
+                            {c.username}
+                          </Link>
+                          <div className="text-sm text-slate-700">{c.text}</div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -318,47 +356,52 @@ export default function NFTPage() {
       {/* Share Dialog */}
       <Dialog
         open={!!showShareFor}
-        onOpenChange={(open) => !open && setShowShareFor(null)}
+        onOpenChange={(open) => {
+          if (!open) setShowShareFor(null);
+        }}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Share NFT Post</DialogTitle>
+            <DialogTitle>Share Post</DialogTitle>
           </DialogHeader>
 
           {showShareFor && (
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={() => {
-                  shareToChat(posts.find((p) => p.id === showShareFor));
-                  setShowShareFor(null);
-                }}
-              >
-                Share to Chat
-              </Button>
-              <Button
-                onClick={() => {
-                  shareToWhatsApp(posts.find((p) => p.id === showShareFor));
-                  setShowShareFor(null);
-                }}
-              >
-                WhatsApp
-              </Button>
-              <Button
-                onClick={() => {
-                  copyLink(posts.find((p) => p.id === showShareFor));
-                  setShowShareFor(null);
-                }}
-              >
-                Copy Link
-              </Button>
-              <Button
-                onClick={() => {
-                  tryNativeShare(posts.find((p) => p.id === showShareFor));
-                  setShowShareFor(null);
-                }}
-              >
-                Native Share
-              </Button>
+            <div className="space-y-4">
+              <div className="text-sm">Choose how to share:</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => {
+                    shareToChat(showShareFor);
+                    setShowShareFor(null);
+                  }}
+                >
+                  Share to Chat
+                </Button>
+                <Button
+                  onClick={() => {
+                    shareToWhatsApp(showShareFor);
+                    setShowShareFor(null);
+                  }}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => {
+                    copyLink(showShareFor);
+                    setShowShareFor(null);
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  onClick={() => {
+                    tryNativeShare(showShareFor);
+                    setShowShareFor(null);
+                  }}
+                >
+                  Native Share
+                </Button>
+              </div>
             </div>
           )}
 

@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Link } from "react-router-dom";
 
 export default function ChatPage() {
   const sampleChats = [
@@ -31,6 +32,7 @@ export default function ChatPage() {
   const [chats, setChats] = useState(sampleChats);
   const [activeChat, setActiveChat] = useState(sampleChats[0]);
   const [newMessage, setNewMessage] = useState("");
+  const messagesEndRef = useRef(null);
 
   const sendMessage = () => {
     if (!newMessage.trim()) return;
@@ -38,7 +40,14 @@ export default function ChatPage() {
       ...activeChat,
       messages: [
         ...activeChat.messages,
-        { from: "me", text: newMessage, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
+        {
+          from: "me",
+          text: newMessage,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
       ],
       lastMessage: newMessage,
     };
@@ -49,12 +58,17 @@ export default function ChatPage() {
     setNewMessage("");
   };
 
+  // Auto scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeChat.messages]);
+
   return (
     <div className="h-screen flex bg-slate-50">
       {/* Chat List */}
-      <div className="w-1/3 border-r bg-white">
+      <div className="w-1/3 border-r bg-white flex flex-col">
         <div className="p-4 font-semibold text-lg border-b">Chats</div>
-        <ScrollArea className="h-[calc(100vh-64px)]">
+        <ScrollArea className="flex-1">
           {chats.map((chat) => (
             <div
               key={chat.id}
@@ -86,17 +100,15 @@ export default function ChatPage() {
             <AvatarImage src={activeChat.profilePic} alt={activeChat.username} />
             <AvatarFallback>{activeChat.username[0]}</AvatarFallback>
           </Avatar>
-          <div className="font-medium">{activeChat.username}</div>
+          <Link to={`/profile/${activeChat.username}`} className="font-medium">{activeChat.username}</Link>
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 p-4 space-y-3 bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
           {activeChat.messages.map((msg, i) => (
             <div
               key={i}
-              className={`flex ${
-                msg.from === "me" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex ${msg.from === "me" ? "justify-end" : "justify-start"}`}
             >
               <Card
                 className={`px-3 py-2 max-w-xs ${
@@ -114,9 +126,10 @@ export default function ChatPage() {
               </Card>
             </div>
           ))}
-        </ScrollArea>
+          <div ref={messagesEndRef} />
+        </div>
 
-        {/* Input */}
+        {/* Input (fixed at bottom) */}
         <div className="p-3 border-t flex gap-2 bg-white">
           <Input
             placeholder="Type a message..."

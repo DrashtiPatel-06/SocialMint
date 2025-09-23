@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -9,287 +10,256 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Link } from "react-router-dom";
 
 export default function BlogPage() {
-  // Sample blogs
   const sampleBlogs = [
     {
       id: "b1",
-      title: "Getting Started with Algorand",
-      author: "cryptoGuru",
-      date: "2025-09-10",
-      excerpt:
-        "Algorand is a fast, secure blockchain — here’s how to begin your journey.",
-      likes: 15,
+      username: "web3dev",
+      profilePic: "https://i.pravatar.cc/40?img=10",
+      title: "Why Algorand is Future of Blockchain",
+      category: "Web3",
+      likes: 22,
+      postedAt: "2025-09-15",
     },
     {
       id: "b2",
-      title: "NFTs on Algorand",
-      author: "nftartist",
-      date: "2025-09-12",
-      excerpt:
-        "Why Algorand NFTs are different from others and how they scale.",
-      likes: 28,
+      username: "techgirl",
+      profilePic: "https://i.pravatar.cc/40?img=12",
+      title: "Building Dapps with SocialMint",
+      category: "Tech",
+      likes: 30,
+      postedAt: "2025-09-17",
     },
     {
       id: "b3",
-      title: "Algorand DeFi Growth",
-      author: "defiMaster",
-      date: "2025-09-15",
-      excerpt:
-        "DeFi on Algorand is expanding — let’s explore the biggest projects.",
-      likes: 9,
+      username: "drashti",
+      profilePic: "https://i.pravatar.cc/40?img=14",
+      title: "Lifestyle as a Web3 Creator",
+      category: "Lifestyle",
+      likes: 10,
+      postedAt: "2025-09-18",
     },
   ];
 
   const [blogs, setBlogs] = useState(sampleBlogs);
-  const [liked, setLiked] = useState({});
-  const [showShareFor, setShowShareFor] = useState(null);
-
-  // filters
   const [search, setSearch] = useState("");
-  const [dateFilter, setDateFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("latest");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState("latest");
+  const [shareBlog, setShareBlog] = useState(null);
 
-  // pagination
-  const [page, setPage] = useState(1);
-  const pageSize = 2;
+  const toggleLike = (blogId) => {
+    setBlogs((prev) =>
+      prev.map((blog) =>
+        blog.id === blogId
+          ? {
+              ...blog,
+              likes: blog.likes + (blog.liked ? -1 : 1),
+              liked: !blog.liked,
+            }
+          : blog
+      )
+    );
+  };
 
-  // handlers
-  function toggleLike(blogId) {
-    setLiked((prev) => {
-      const isLiked = !prev[blogId];
-      const updated = { ...prev, [blogId]: isLiked };
+  const copyLink = (blog) => {
+    navigator.clipboard.writeText(window.location.href + "#" + blog.id);
+    alert("Link copied!");
+  };
 
-      setBlogs((bs) =>
-        bs.map((b) =>
-          b.id === blogId
-            ? { ...b, likes: b.likes + (isLiked ? 1 : -1) }
-            : b
-        )
-      );
+  const shareToWhatsApp = (blog) => {
+    const url = `https://wa.me/?text=${encodeURIComponent(
+      blog.title + " - " + window.location.href + "#" + blog.id
+    )}`;
+    window.open(url, "_blank");
+  };
 
-      return updated;
+  const filteredBlogs = blogs
+    .filter(
+      (b) =>
+        b.username.toLowerCase().includes(search.toLowerCase()) ||
+        b.title.toLowerCase().includes(search.toLowerCase())
+    )
+    .filter((b) =>
+      categoryFilter === "all" ? true : b.category === categoryFilter
+    )
+    .sort((a, b) => {
+      if (sortOrder === "latest")
+        return new Date(b.postedAt) - new Date(a.postedAt);
+      if (sortOrder === "oldest")
+        return new Date(a.postedAt) - new Date(b.postedAt);
+      if (sortOrder === "popular") return b.likes - a.likes;
+      return 0;
     });
-  }
-
-  async function copyLink(blog) {
-    try {
-      await navigator.clipboard.writeText(
-        `https://socialmint.app/blog/${blog.id}`
-      );
-      alert("Link copied!");
-    } catch {
-      alert("Could not copy link.");
-    }
-  }
-
-  function shareToWhatsApp(blog) {
-    const text = encodeURIComponent(
-      `${blog.title} — read on SocialMint: https://socialmint.app/blog/${blog.id}`
-    );
-    window.open(`https://wa.me/?text=${text}`, "_blank");
-  }
-
-  function shareToChat(blog) {
-    alert(`Shared to in-app chat: ${blog.title}`);
-  }
-
-  async function tryNativeShare(blog) {
-    const shareData = {
-      title: blog.title,
-      text: blog.excerpt,
-      url: `https://socialmint.app/blog/${blog.id}`,
-    };
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch {}
-    } else {
-      alert("Native share not supported.");
-    }
-  }
-
-  // filtering
-  let filtered = blogs.filter(
-    (b) =>
-      b.title.toLowerCase().includes(search.toLowerCase()) ||
-      b.author.toLowerCase().includes(search.toLowerCase())
-  );
-
-  if (dateFilter !== "all") {
-    filtered = filtered.filter((b) =>
-      dateFilter === "today"
-        ? new Date(b.date).toDateString() === new Date().toDateString()
-        : new Date(b.date) < new Date()
-    );
-  }
-
-  if (sortBy === "likes") {
-    filtered = [...filtered].sort((a, b) => b.likes - a.likes);
-  } else if (sortBy === "latest") {
-    filtered = [...filtered].sort(
-      (a, b) => new Date(b.date) - new Date(a.date)
-    );
-  }
-
-  // pagination
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
-
-  function clearFilters() {
-    setSearch("");
-    setDateFilter("all");
-    setSortBy("latest");
-  }
 
   return (
-    <div className="max-w-3xl mx-auto py-6">
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        <Input
-          placeholder="Search blog..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-40"
-        />
+    <div className="min-h-screen bg-slate-50 p-6">
+      <div className="max-w-4xl mx-auto">
+        <header className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Blogs</h1>
+        </header>
 
-        <select
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
-          className="border rounded px-2 py-1 text-sm"
-        >
-          <option value="all">All Dates</option>
-          <option value="today">Today</option>
-          <option value="past">Past</option>
-        </select>
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+          <Input
+            placeholder="Search blogs..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="sm:w-1/3"
+          />
 
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="border rounded px-2 py-1 text-sm"
-        >
-          <option value="latest">Latest</option>
-          <option value="likes">Most Liked</option>
-        </select>
-
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={clearFilters}
-          className="ml-auto"
-        >
-          Clear Filters
-        </Button>
-      </div>
-
-      {/* Blogs */}
-      <div className="space-y-6">
-        {paginated.map((blog) => (
-          <Card
-            key={blog.id}
-            className="p-4 rounded-2xl shadow-xl bg-white hover:shadow-2xl transition"
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="px-3 py-2 border rounded bg-white text-sm"
           >
-            <CardContent>
-              <h3 className="text-lg font-semibold">{blog.title}</h3>
-              <p className="text-sm text-slate-500 mb-2">
-                By {blog.author} — {blog.date}
-              </p>
-              <p className="mb-3 text-slate-700">{blog.excerpt}</p>
+            <option value="all">All Categories</option>
+            <option value="Web3">Web3</option>
+            <option value="Tech">Tech</option>
+            <option value="Lifestyle">Lifestyle</option>
+          </select>
 
-              <div className="flex items-center gap-3">
-                <button
-                  aria-pressed={!!liked[blog.id]}
-                  onClick={() => toggleLike(blog.id)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full border transition ${
-                    liked[blog.id]
-                      ? "text-red-600 border-red-200 bg-red-50"
-                      : "text-gray-500 border-gray-200 bg-white"
-                  }`}
-                >
-                  ❤️ <span className="text-sm">{blog.likes}</span>
-                </button>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="px-3 py-2 border rounded bg-white text-sm"
+          >
+            <option value="latest">Latest</option>
+            <option value="oldest">Oldest</option>
+            <option value="popular">Most Liked</option>
+          </select>
+        </div>
 
-                <button
-                  onClick={() => setShowShareFor(blog.id)}
-                  className="px-3 py-1 rounded-full border text-sm"
-                >
-                  Share
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {/* Blogs */}
+        <div className="space-y-4">
+          {filteredBlogs.map((blog) => (
+            <Card key={blog.id} className="bg-white rounded-2xl p-4 shadow-lg">
+              <CardContent>
+                <header className="flex items-center gap-3 mb-3">
+                  <Avatar>
+                    <AvatarImage src={blog.profilePic} alt={blog.username} />
+                    <AvatarFallback>{blog.username[0]}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <Link to={`/profile/${blog.username}`} className="font-medium">{blog.username}</Link>
+                    <div className="text-xs text-slate-500">
+                      {blog.postedAt}
+                    </div>
+                  </div>
+                </header>
+
+                <h2 className="font-semibold text-lg mb-2">{blog.title}</h2>
+                <p className="text-xs text-slate-500 mb-3">
+                  Category: {blog.category}
+                </p>
+
+                <div className="flex items-center gap-3 mt-3">
+                  <button
+                    aria-pressed={!!blog.liked}
+                    onClick={() => toggleLike(blog.id)}
+                    className={`flex items-center gap-2 px-3 py-1 rounded-full border transition ${
+                      blog.liked
+                        ? "text-red-600 border-red-200 bg-red-50"
+                        : "text-slate-700 border-slate-200 bg-white hover:bg-slate-50"
+                    }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill={blog.liked ? "currentColor" : "none"}
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 21s-8-7.4-8-11a4 4 0 018-2 4 4 0 018 2c0 3.6-8 11-8 11z"
+                      />
+                    </svg>
+                    <span className="text-sm">{blog.likes}</span>
+                  </button>
+                  <button
+                    onClick={() => setShareBlog(blog)}
+                    className="px-3 py-1 rounded-full border text-sm"
+                  >
+                    Share
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
+          {filteredBlogs.length === 0 && (
+            <div className="text-center text-slate-500 py-10">
+              No blogs found
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-between items-center mt-6">
-        <Button
-          onClick={() => setPage((p) => Math.max(p - 1, 1))}
-          disabled={page === 1}
-        >
-          Prev
-        </Button>
-        <span className="text-sm">
-          Page {page} of {totalPages}
-        </span>
-        <Button
-          onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-          disabled={page === totalPages}
-        >
-          Next
-        </Button>
-      </div>
-
-      {/* Share Dialog */}
+      {/* Share Modal */}
       <Dialog
-        open={!!showShareFor}
-        onOpenChange={(open) => !open && setShowShareFor(null)}
+        open={!!shareBlog}
+        onOpenChange={(open) => {
+          if (!open) setShareBlog(null);
+        }}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Share Blog</DialogTitle>
+            <DialogTitle>Share Post</DialogTitle>
           </DialogHeader>
 
-          {showShareFor && (
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={() => {
-                  shareToChat(blogs.find((b) => b.id === showShareFor));
-                  setShowShareFor(null);
-                }}
-              >
-                Share to Chat
-              </Button>
-              <Button
-                onClick={() => {
-                  shareToWhatsApp(blogs.find((b) => b.id === showShareFor));
-                  setShowShareFor(null);
-                }}
-              >
-                WhatsApp
-              </Button>
-              <Button
-                onClick={() => {
-                  copyLink(blogs.find((b) => b.id === showShareFor));
-                  setShowShareFor(null);
-                }}
-              >
-                Copy Link
-              </Button>
-              <Button
-                onClick={() => {
-                  tryNativeShare(blogs.find((b) => b.id === showShareFor));
-                  setShowShareFor(null);
-                }}
-              >
-                Native Share
-              </Button>
+          {shareBlog && (
+            <div className="space-y-4">
+              <div className="text-sm">Choose how to share:</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => {
+                    alert("Shared inside chat!");
+                    setShareBlog(null);
+                  }}
+                >
+                  Share to Chat
+                </Button>
+                <Button
+                  onClick={() => {
+                    shareToWhatsApp(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => {
+                    copyLink(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: shareBlog.title,
+                        url: window.location.href + "#" + shareBlog.id,
+                      });
+                    } else {
+                      alert("Native share not supported");
+                    }
+                    setShareBlog(null);
+                  }}
+                >
+                  Native Share
+                </Button>
+              </div>
             </div>
           )}
 
           <DialogFooter>
-            <Button variant="secondary" onClick={() => setShowShareFor(null)}>
+            <Button variant="secondary" onClick={() => setShareBlog(null)}>
               Close
             </Button>
           </DialogFooter>
