@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,11 +18,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [postOpen, setPostOpen] = useState(null);
   const [showShareFor, setShowShareFor] = useState(null);
+  const [activeTab, setActiveTab] = useState("nft");
 
   const [user, setUser] = useState({
     username: "John Doe",
@@ -58,36 +60,125 @@ export default function ProfilePage() {
     },
   ]);
 
+  const sampleBlogs = [
+    {
+      id: "b1",
+      username: "web3dev",
+      profilePic: "https://i.pravatar.cc/40?img=10",
+      title: "Why Algorand is Future of Blockchain",
+      category: "Web3",
+      likes: 22,
+      postedAt: "2025-09-15",
+    },
+    {
+      id: "b2",
+      username: "techgirl",
+      profilePic: "https://i.pravatar.cc/40?img=12",
+      title: "Building Dapps with SocialMint",
+      category: "Tech",
+      likes: 30,
+      postedAt: "2025-09-17",
+    },
+  ];
+
+  const sampleEvents = [
+    {
+      id: "e1",
+      username: "algorandTeam",
+      profilePic: "https://i.pravatar.cc/40?img=15",
+      title: "Algorand Global Meetup",
+      description: "Join us for a global Algorand community meetup.",
+      date: "2025-09-20T18:00:00",
+      likes: 40,
+    },
+    {
+      id: "e2",
+      username: "blockqueen",
+      profilePic: "https://i.pravatar.cc/40?img=16",
+      title: "Web3 Hackathon",
+      description: "48 hours hackathon for Web3 devs.",
+      date: "2025-09-10T10:00:00",
+      likes: 25,
+    },
+  ];
+
   const [comments, setComments] = useState({});
   const [liked, setLiked] = useState({});
-  const [commentOpen, setCommentOpen] = useState({}); // ✅ FIX: added missing state
+  const [commentOpen, setCommentOpen] = useState({});
+  const [blogs, setBlogs] = useState(sampleBlogs);
+  const [events, setEvents] = useState(sampleEvents);
+  const [shareBlog, setShareBlog] = useState(null);
+  const [shareEvent, setShareEvent] = useState(null);
+  const [calendarEvent, setCalendarEvent] = useState(null);
+  const [eventLiked, setEventLiked] = useState({});
 
-  // Like handler
-  function toggleLike(postId) {
+  useEffect(() => {
+    // NFT dummy posts
+    const fakeUser = {
+      username: user.username,
+      bio: "NFT Collector | Web3 Enthusiast",
+      profilePic: "https://i.pravatar.cc/150?u=" + user.username,
+    };
+    const fakePosts = [
+      {
+        id: 1,
+        src: "https://picsum.photos/400/400?random=11",
+        caption: "Cool NFT",
+        likes: 5,
+      },
+      {
+        id: 2,
+        src: "https://picsum.photos/400/400?random=12",
+        caption: "Another NFT",
+        likes: 8,
+      },
+    ];
+    setUser(fakeUser);
+    setPosts(fakePosts);
+  }, [user.username]);
+
+  // Like handlers
+  const toggleLike = (postId) => {
     setLiked((prev) => {
       const isLiked = !prev[postId];
       const updated = { ...prev, [postId]: isLiked };
-
       setPosts((ps) =>
         ps.map((p) =>
           p.id === postId ? { ...p, likes: p.likes + (isLiked ? 1 : -1) } : p
         )
       );
-
       return updated;
     });
-  }
+  };
 
-  // Toggle comment section
-  function toggleCommentSection(postId) {
-    setCommentOpen((prev) => ({
-      ...prev,
-      [postId]: !prev[postId],
-    }));
-  }
+  const toggleBlogLike = (id) => {
+    setBlogs((prev) =>
+      prev.map((b) =>
+        b.id === id
+          ? { ...b, liked: !b.liked, likes: b.likes + (b.liked ? -1 : 1) }
+          : b
+      )
+    );
+  };
 
-  // Comment handler
-  function addComment(postId, text) {
+  const toggleEventLike = (id) => {
+    setEventLiked((prev) => {
+      const isLiked = !prev[id];
+      const updated = { ...prev, [id]: isLiked };
+      setEvents((evs) =>
+        evs.map((e) =>
+          e.id === id ? { ...e, likes: e.likes + (isLiked ? 1 : -1) } : e
+        )
+      );
+      return updated;
+    });
+  };
+
+  const toggleCommentSection = (postId) => {
+    setCommentOpen((prev) => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  const addComment = (postId, text) => {
     if (!text) return;
     setComments((prev) => {
       const list = prev[postId] ? [...prev[postId]] : [];
@@ -99,10 +190,10 @@ export default function ProfilePage() {
       });
       return { ...prev, [postId]: list };
     });
-  }
+  };
 
   // Share handlers
-  async function copyLink(post) {
+  const copyLink = async (post) => {
     try {
       await navigator.clipboard.writeText(
         `https://socialmint.app/posts/${post.id}`
@@ -111,33 +202,16 @@ export default function ProfilePage() {
     } catch {
       alert("Could not copy link.");
     }
-  }
+  };
 
-  function shareToWhatsApp(post) {
+  const shareToWhatsApp = (post) => {
     const text = encodeURIComponent(
-      `${post.caption} — see on SocialMint: https://socialmint.app/posts/${post.id}`
+      `${
+        post.caption || post.title
+      } — see on SocialMint: https://socialmint.app/posts/${post.id}`
     );
     window.open(`https://wa.me/?text=${text}`, "_blank");
-  }
-
-  function shareToChat(post) {
-    alert(`Shared to in-app chat: ${post.caption}`);
-  }
-
-  async function tryNativeShare(post) {
-    const shareData = {
-      title: "SocialMint Post",
-      text: post.caption,
-      url: `https://socialmint.app/posts/${post.id}`,
-    };
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch {}
-    } else {
-      alert("Native share not supported.");
-    }
-  }
+  };
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -150,6 +224,39 @@ export default function ProfilePage() {
       profilePic: form.get("profilePic"),
     }));
     setIsEditing(false);
+  };
+
+  const getCalendarLinks = (event) => {
+    const start = new Date(event.date).toISOString().replace(/-|:|\.\d+/g, "");
+    const end = new Date(new Date(event.date).getTime() + 60 * 60 * 1000)
+      .toISOString()
+      .replace(/-|:|\.\d+/g, "");
+    return {
+      google: `https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent(
+        event.title
+      )}&dates=${start}/${end}`,
+      outlook: `https://outlook.office.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(
+        event.title
+      )}&startdt=${start}&enddt=${end}`,
+      yahoo: `https://calendar.yahoo.com/?v=60&title=${encodeURIComponent(
+        event.title
+      )}&st=${start}&et=${end}`,
+      ics: URL.createObjectURL(
+        new Blob(
+          [
+            `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${event.title}
+DTSTART:${start}
+DTEND:${end}
+END:VEVENT
+END:VCALENDAR`,
+          ],
+          { type: "text/calendar" }
+        )
+      ),
+    };
   };
 
   return (
@@ -175,24 +282,185 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* NFT Grid */}
-      <div className="grid grid-cols-3 gap-2 md:gap-4">
-        {posts.map((post) => (
-          <div
-            key={post.id}
-            className="aspect-square overflow-hidden rounded-lg shadow-sm cursor-pointer"
-            onClick={() => setPostOpen(post)}
-          >
-            <img
-              src={post.src}
-              alt={post.caption}
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-            />
+      {/* Tabs */}
+      <div className="mb-6">
+        <div className="flex gap-6 border-b border-slate-200 mb-4">
+          {["nft", "blogs", "events"].map((tab) => (
+            <div
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className="relative cursor-pointer pb-2 font-medium text-slate-700 hover:text-slate-900"
+            >
+              {tab.toUpperCase()}
+              {activeTab === tab && (
+                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-blue-600" />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "nft" && (
+          <div className="grid grid-cols-3 gap-2 md:gap-4">
+            {posts.map((post) => (
+              <div
+                key={post.id}
+                className="aspect-square overflow-hidden rounded-lg shadow-sm cursor-pointer"
+                onClick={() => setPostOpen(post)}
+              >
+                <img
+                  src={post.src}
+                  alt={post.caption}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            ))}
           </div>
-        ))}
+        )}
+
+        {activeTab === "blogs" && (
+          <div className="space-y-4">
+            {blogs.map((b) => (
+              <Card
+                key={b.id}
+                className="p-4 shadow-md rounded-lg hover:shadow-lg"
+              >
+                <CardContent>
+                  <header className="flex items-center gap-3 mb-3">
+                    <Avatar>
+                      <AvatarImage src={b.profilePic} alt={b.username} />
+                      <AvatarFallback>{b.username[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <Link
+                        to={`/profile/${b.username}`}
+                        className="font-medium"
+                      >
+                        {b.username}
+                      </Link>
+                      <div className="text-xs text-slate-500">{b.postedAt}</div>
+                    </div>
+                  </header>
+                  <h2 className="font-semibold text-lg mb-2">{b.title}</h2>
+                  <p className="text-xs text-slate-500 mb-3">
+                    Category: {b.category}
+                  </p>
+                  <div className="flex items-center gap-3 mt-3">
+                    <button
+                      aria-pressed={!!b.liked}
+                      onClick={() => toggleBlogLike(b.id)}
+                      className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
+                        b.liked
+                          ? "text-red-600 border-red-200 bg-red-50"
+                          : "text-slate-700 border-slate-200 bg-white"
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill={b.liked ? "currentColor" : "none"}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 21s-8-7.4-8-11a4 4 0 018-2 4 4 0 018 2c0 3.6-8 11-8 11z"
+                        />
+                      </svg>
+                      <span className="text-sm">{b.likes}</span>
+                    </button>
+
+                    <button
+                      onClick={() => setShareBlog(b)}
+                      className="px-3 py-1 rounded-full border text-sm"
+                    >
+                      Share
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "events" && (
+          <div className="space-y-4">
+            {events.map((e) => (
+              <Card
+                key={e.id}
+                className="p-4 shadow-md rounded-lg hover:shadow-lg"
+              >
+                <CardContent>
+                  <header className="flex items-center gap-3 mb-3">
+                    <Avatar>
+                      <AvatarImage src={e.profilePic} alt={e.username} />
+                      <AvatarFallback>{e.username[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <Link
+                        to={`/profile/${e.username}`}
+                        className="font-medium"
+                      >
+                        {e.username}
+                      </Link>
+                      <div className="text-xs text-slate-500">
+                        {new Date(e.date).toLocaleString()}
+                      </div>
+                    </div>
+                  </header>
+                  <h2 className="font-semibold text-lg mb-2">{e.title}</h2>
+                  <p className="text-slate-600">{e.description}</p>
+                  <div className="flex items-center gap-3 mt-3">
+                    <button
+                      aria-pressed={!!eventLiked[e.id]}
+                      onClick={() => toggleEventLike(e.id)}
+                      className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
+                        eventLiked[e.id]
+                          ? "text-red-600 border-red-200 bg-red-50"
+                          : "text-slate-700 border-slate-100 bg-white"
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill={eventLiked[e.id] ? "currentColor" : "none"}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 21s-8-7.4-8-11a4 4 0 018-2 4 4 0 018 2c0 3.6-8 11-8 11z"
+                        />
+                      </svg>
+                      <span className="text-sm">{e.likes}</span>
+                    </button>
+
+                    <button
+                      onClick={() => setShareEvent(e)}
+                      className="px-3 py-1 rounded-full border text-sm"
+                    >
+                      Share
+                    </button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCalendarEvent(e)}
+                    >
+                      📅 Add to Calendar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* NFT Modal */}
+      {/* NFT Post Dialog */}
       <Dialog open={!!postOpen} onOpenChange={() => setPostOpen(null)}>
         <DialogContent className="sm:max-w-xl max-h-[80vh] overflow-y-auto">
           {postOpen && (
@@ -203,9 +471,7 @@ export default function ProfilePage() {
                 className="rounded-lg w-full max-h-[400px] object-cover mb-3"
               />
               <p className="mb-3">{postOpen.caption}</p>
-
               <div className="flex items-center gap-3">
-                {/* Like */}
                 <button
                   aria-pressed={!!liked[postOpen.id]}
                   onClick={() => toggleLike(postOpen.id)}
@@ -215,7 +481,7 @@ export default function ProfilePage() {
                       : "text-slate-700 border-slate-100 bg-white"
                   }`}
                 >
-                <svg
+                  <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4"
                     viewBox="0 0 24 24"
@@ -229,20 +495,14 @@ export default function ProfilePage() {
                       d="M12 21s-8-7.4-8-11a4 4 0 018-2 4 4 0 018 2c0 3.6-8 11-8 11z"
                     />
                   </svg>
-                  <span className="text-sm">
-                    {posts.find((p) => p.id === postOpen.id)?.likes}
-                  </span>
+                  <span className="text-sm">{postOpen.likes}</span>
                 </button>
-
-                {/* Comment */}
                 <button
                   onClick={() => toggleCommentSection(postOpen.id)}
                   className="px-3 py-1 rounded-full border text-sm"
                 >
                   Comment
                 </button>
-
-                {/* Share */}
                 <button
                   onClick={() => setShowShareFor(postOpen)}
                   className="px-3 py-1 rounded-full border text-sm"
@@ -250,16 +510,8 @@ export default function ProfilePage() {
                   Share
                 </button>
               </div>
-
-              {/* Comment Section */}
               {commentOpen[postOpen.id] && (
                 <div className="mt-4 border-t pt-3 relative">
-                  <button
-                    onClick={() => toggleCommentSection(postOpen.id)}
-                    className="absolute -top-3 right-3 px-2 py-1 text-xs bg-white border rounded-full"
-                  >
-                    ✖
-                  </button>
                   <Input
                     placeholder="Write a comment..."
                     onKeyDown={(e) => {
@@ -276,8 +528,8 @@ export default function ProfilePage() {
                         className="bg-slate-50 p-2 rounded flex items-start gap-2"
                       >
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={c.profilePic} alt={c.username} />
-                          <AvatarFallback>{c.username.slice(0, 1)}</AvatarFallback>
+                          <AvatarImage src={c.profilePic} />
+                          <AvatarFallback>{c.username[0]}</AvatarFallback>
                         </Avatar>
                         <div>
                           <Link
@@ -300,56 +552,219 @@ export default function ProfilePage() {
 
       {/* Share Dialog */}
       <Dialog
-        open={!!showShareFor}
-        onOpenChange={(open) => !open && setShowShareFor(null)}
+        open={!!showShareFor || !!shareBlog || !!shareEvent}
+        onOpenChange={() => {
+          setShowShareFor(null);
+          setShareBlog(null);
+          setShareEvent(null);
+        }}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Share Post</DialogTitle>
           </DialogHeader>
-
           {showShareFor && (
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={() => {
-                  shareToChat(showShareFor);
-                  setShowShareFor(null);
-                }}
-              >
-                Share to Chat
-              </Button>
-              <Button
-                onClick={() => {
-                  shareToWhatsApp(showShareFor);
-                  setShowShareFor(null);
-                }}
-              >
-                WhatsApp
-              </Button>
-              <Button
-                onClick={() => {
-                  copyLink(showShareFor);
-                  setShowShareFor(null);
-                }}
-              >
-                Copy Link
-              </Button>
-              <Button
-                onClick={() => {
-                  tryNativeShare(showShareFor);
-                  setShowShareFor(null);
-                }}
-              >
-                Native Share
-              </Button>
+            <div className="space-y-4">
+              <div className="text-sm">Choose how to share:</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => {
+                    alert("Shared inside chat!");
+                    setShareBlog(null);
+                  }}
+                >
+                  Share to Chat
+                </Button>
+                <Button
+                  onClick={() => {
+                    shareToWhatsApp(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => {
+                    copyLink(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: shareBlog.title,
+                        url: window.location.href + "#" + shareBlog.id,
+                      });
+                    } else {
+                      alert("Native share not supported");
+                    }
+                    setShareBlog(null);
+                  }}
+                >
+                  Native Share
+                </Button>
+              </div>
             </div>
           )}
-
+          {shareBlog && (
+            <div className="space-y-4">
+              <div className="text-sm">Choose how to share:</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => {
+                    alert("Shared inside chat!");
+                    setShareBlog(null);
+                  }}
+                >
+                  Share to Chat
+                </Button>
+                <Button
+                  onClick={() => {
+                    shareToWhatsApp(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => {
+                    copyLink(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: shareBlog.title,
+                        url: window.location.href + "#" + shareBlog.id,
+                      });
+                    } else {
+                      alert("Native share not supported");
+                    }
+                    setShareBlog(null);
+                  }}
+                >
+                  Native Share
+                </Button>
+              </div>
+            </div>
+          )}
+          {shareEvent && (
+            <div className="space-y-4">
+              <div className="text-sm">Choose how to share:</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => {
+                    alert("Shared inside chat!");
+                    setShareBlog(null);
+                  }}
+                >
+                  Share to Chat
+                </Button>
+                <Button
+                  onClick={() => {
+                    shareToWhatsApp(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => {
+                    copyLink(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: shareBlog.title,
+                        url: window.location.href + "#" + shareBlog.id,
+                      });
+                    } else {
+                      alert("Native share not supported");
+                    }
+                    setShareBlog(null);
+                  }}
+                >
+                  Native Share
+                </Button>
+              </div>
+            </div>
+          )}
           <DialogFooter>
-            <Button variant="secondary" onClick={() => setShowShareFor(null)}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowShareFor(null);
+                setShareBlog(null);
+                setShareEvent(null);
+              }}
+            >
               Close
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Calendar Modal */}
+      <Dialog
+        open={!!calendarEvent}
+        onOpenChange={() => setCalendarEvent(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add to Calendar</DialogTitle>
+          </DialogHeader>
+          {calendarEvent && (
+            <div className="flex flex-col gap-2">
+              <Button
+                size="sm"
+                onClick={() =>
+                  window.open(getCalendarLinks(calendarEvent).google, "_blank")
+                }
+              >
+                Google Calendar
+              </Button>
+              <Button
+                size="sm"
+                onClick={() =>
+                  window.open(getCalendarLinks(calendarEvent).outlook, "_blank")
+                }
+              >
+                Outlook / Microsoft
+              </Button>
+              <Button
+                size="sm"
+                onClick={() =>
+                  window.open(getCalendarLinks(calendarEvent).yahoo, "_blank")
+                }
+              >
+                Yahoo Calendar
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  const a = document.createElement("a");
+                  a.href = getCalendarLinks(calendarEvent).ics;
+                  a.download = `${calendarEvent.title}.ics`;
+                  a.click();
+                  URL.revokeObjectURL(a.href);
+                }}
+              >
+                Apple / ICS File
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

@@ -85,8 +85,18 @@ export default function PublicProfilePage() {
       profilePic: "https://i.pravatar.cc/150?u=" + username,
     };
     const fakePosts = [
-      { id: 1, src: "https://picsum.photos/400/400?random=11", caption: "Cool NFT", likes: 5 },
-      { id: 2, src: "https://picsum.photos/400/400?random=12", caption: "Another NFT", likes: 8 },
+      {
+        id: 1,
+        src: "https://picsum.photos/400/400?random=11",
+        caption: "Cool NFT",
+        likes: 5,
+      },
+      {
+        id: 2,
+        src: "https://picsum.photos/400/400?random=12",
+        caption: "Another NFT",
+        likes: 8,
+      },
     ];
     setUser(fakeUser);
     setPosts(fakePosts);
@@ -96,7 +106,9 @@ export default function PublicProfilePage() {
     setLiked((prev) => ({ ...prev, [postId]: !prev[postId] }));
     setPosts((prev) =>
       prev.map((p) =>
-        p.id === postId ? { ...p, likes: p.likes + (liked[postId] ? -1 : 1) } : p
+        p.id === postId
+          ? { ...p, likes: p.likes + (liked[postId] ? -1 : 1) }
+          : p
       )
     );
   };
@@ -121,13 +133,21 @@ export default function PublicProfilePage() {
     }));
   };
 
-  const shareToChat = (post) => alert("Shared to Chat: " + post.caption || post.title);
+  const shareToChat = (post) =>
+    alert("Shared to Chat: " + post.caption || post.title);
   const shareToWhatsApp = (post) =>
-    window.open(`https://wa.me/?text=${encodeURIComponent(post.caption || post.title)}`, "_blank");
-  const copyLink = (post) => navigator.clipboard.writeText(window.location.href);
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(post.caption || post.title)}`,
+      "_blank"
+    );
+  const copyLink = (post) =>
+    navigator.clipboard.writeText(window.location.href);
   const tryNativeShare = async (post) => {
     if (navigator.share) {
-      await navigator.share({ title: post.caption || post.title, url: window.location.href });
+      await navigator.share({
+        title: post.caption || post.title,
+        url: window.location.href,
+      });
     } else {
       alert("Native share not supported");
     }
@@ -136,7 +156,9 @@ export default function PublicProfilePage() {
   const toggleBlogLike = (id) => {
     setBlogs((prev) =>
       prev.map((b) =>
-        b.id === id ? { ...b, liked: !b.liked, likes: b.likes + (b.liked ? -1 : 1) } : b
+        b.id === id
+          ? { ...b, liked: !b.liked, likes: b.likes + (b.liked ? -1 : 1) }
+          : b
       )
     );
   };
@@ -177,7 +199,9 @@ DTEND:${endStr}
 LOCATION:${location}
 END:VEVENT
 END:VCALENDAR`;
-        const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+        const blob = new Blob([icsContent], {
+          type: "text/calendar;charset=utf-8",
+        });
         return URL.createObjectURL(blob);
       })(),
     };
@@ -241,7 +265,10 @@ END:VCALENDAR`;
           {activeTab === "blogs" && (
             <div className="space-y-4">
               {blogs.map((b) => (
-                <Card key={b.id} className="p-4 shadow-md rounded-lg hover:shadow-lg">
+                <Card
+                  key={b.id}
+                  className="p-4 shadow-md rounded-lg hover:shadow-lg"
+                >
                   <CardContent>
                     <header className="flex items-center gap-3 mb-3">
                       <Avatar>
@@ -249,22 +276,48 @@ END:VCALENDAR`;
                         <AvatarFallback>{b.username[0]}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <Link to={`/profile/${b.username}`} className="font-medium">{b.username}</Link>
-                        <div className="text-xs text-slate-500">{b.postedAt}</div>
+                        <Link
+                          to={`/profile/${b.username}`}
+                          className="font-medium"
+                        >
+                          {b.username}
+                        </Link>
+                        <div className="text-xs text-slate-500">
+                          {b.postedAt}
+                        </div>
                       </div>
                     </header>
                     <h2 className="font-semibold text-lg mb-2">{b.title}</h2>
-                    <p className="text-xs text-slate-500 mb-3">Category: {b.category}</p>
+                    <p className="text-xs text-slate-500 mb-3">
+                      Category: {b.category}
+                    </p>
                     <div className="flex items-center gap-3 mt-3">
                       <button
                         aria-pressed={!!b.liked}
                         onClick={() => toggleBlogLike(b.id)}
                         className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
-                          b.liked ? "text-red-600 border-red-200 bg-red-50" : "text-slate-700 border-slate-200 bg-white"
+                          b.liked
+                            ? "text-red-600 border-red-200 bg-red-50"
+                            : "text-slate-700 border-slate-200 bg-white"
                         }`}
                       >
-                        ❤️ {b.likes}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          viewBox="0 0 24 24"
+                          fill={b.liked ? "currentColor" : "none"}
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 21s-8-7.4-8-11a4 4 0 018-2 4 4 0 018 2c0 3.6-8 11-8 11z"
+                          />
+                        </svg>
+                        <span className="text-sm">{b.likes}</span>
                       </button>
+
                       <button
                         onClick={() => setShareBlog(b)}
                         className="px-3 py-1 rounded-full border text-sm"
@@ -282,7 +335,10 @@ END:VCALENDAR`;
           {activeTab === "events" && (
             <div className="space-y-4">
               {events.map((e) => (
-                <Card key={e.id} className="p-4 shadow-md rounded-lg hover:shadow-lg">
+                <Card
+                  key={e.id}
+                  className="p-4 shadow-md rounded-lg hover:shadow-lg"
+                >
                   <CardContent>
                     <header className="flex items-center gap-3 mb-3">
                       <Avatar>
@@ -290,8 +346,15 @@ END:VCALENDAR`;
                         <AvatarFallback>{e.username[0]}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <Link to={`/profile/${e.username}`} className="font-medium">{e.username}</Link>
-                        <div className="text-xs text-slate-500">{new Date(e.date).toLocaleString()}</div>
+                        <Link
+                          to={`/profile/${e.username}`}
+                          className="font-medium"
+                        >
+                          {e.username}
+                        </Link>
+                        <div className="text-xs text-slate-500">
+                          {new Date(e.date).toLocaleString()}
+                        </div>
                       </div>
                     </header>
                     <h2 className="font-semibold text-lg mb-2">{e.title}</h2>
@@ -301,18 +364,41 @@ END:VCALENDAR`;
                         aria-pressed={!!eventLiked[e.id]}
                         onClick={() => toggleEventLike(e.id)}
                         className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
-                          eventLiked[e.id] ? "text-red-600 border-red-200 bg-red-50" : "text-slate-700 border-slate-100 bg-white"
+                          eventLiked[e.id]
+                            ? "text-red-600 border-red-200 bg-red-50"
+                            : "text-slate-700 border-slate-100 bg-white"
                         }`}
                       >
-                        ❤️ {e.likes}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          viewBox="0 0 24 24"
+                          fill={eventLiked[e.id] ? "currentColor" : "none"}
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 21s-8-7.4-8-11a4 4 0 018-2 4 4 0 018 2c0 3.6-8 11-8 11z"
+                          />
+                        </svg>
+                        <span className="text-sm">{e.likes}</span>
                       </button>
+
                       <button
                         onClick={() => setShareEvent(e)}
                         className="px-3 py-1 rounded-full border text-sm"
                       >
                         Share
                       </button>
-                      <Button size="sm" variant="outline" onClick={() => setCalendarEvent(e)}>📅 Add to Calendar</Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCalendarEvent(e)}
+                      >
+                        📅 Add to Calendar
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -334,17 +420,43 @@ END:VCALENDAR`;
               />
               <p className="mb-3">{postOpen.caption}</p>
               <div className="flex items-center gap-3">
-                <button
+                 <button
                   aria-pressed={!!liked[postOpen.id]}
                   onClick={() => toggleLike(postOpen.id)}
                   className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
-                    liked[postOpen.id] ? "text-red-600 border-red-200 bg-red-50" : "text-slate-700 border-slate-100 bg-white"
+                    liked[postOpen.id]
+                      ? "text-red-600 border-red-200 bg-red-50"
+                      : "text-slate-700 border-slate-100 bg-white"
                   }`}
                 >
-                  ❤️ {posts.find((p) => p.id === postOpen.id)?.likes}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill={liked[postOpen.id] ? "currentColor" : "none"}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 21s-8-7.4-8-11a4 4 0 018-2 4 4 0 018 2c0 3.6-8 11-8 11z"
+                    />
+                  </svg>
+                  <span className="text-sm">{postOpen.likes}</span>
                 </button>
-                <button onClick={() => toggleCommentSection(postOpen.id)} className="px-3 py-1 rounded-full border text-sm">Comment</button>
-                <button onClick={() => setShowShareFor(postOpen)} className="px-3 py-1 rounded-full border text-sm">Share</button>
+                <button
+                  onClick={() => toggleCommentSection(postOpen.id)}
+                  className="px-3 py-1 rounded-full border text-sm"
+                >
+                  Comment
+                </button>
+                <button
+                  onClick={() => setShowShareFor(postOpen)}
+                  className="px-3 py-1 rounded-full border text-sm"
+                >
+                  Share
+                </button>
               </div>
               {commentOpen[postOpen.id] && (
                 <div className="mt-4 border-t pt-3 relative">
@@ -359,13 +471,21 @@ END:VCALENDAR`;
                   />
                   <div className="space-y-2 max-h-40 overflow-y-auto mt-2">
                     {(comments[postOpen.id] || []).map((c) => (
-                      <div key={c.id} className="bg-slate-50 p-2 rounded flex items-start gap-2">
+                      <div
+                        key={c.id}
+                        className="bg-slate-50 p-2 rounded flex items-start gap-2"
+                      >
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={c.profilePic} />
                           <AvatarFallback>{c.username[0]}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <Link to={`/profile/${c.username}`} className="font-medium text-sm hover:underline">{c.username}</Link>
+                          <Link
+                            to={`/profile/${c.username}`}
+                            className="font-medium text-sm hover:underline"
+                          >
+                            {c.username}
+                          </Link>
                           <div className="text-sm text-slate-700">{c.text}</div>
                         </div>
                       </div>
@@ -379,167 +499,218 @@ END:VCALENDAR`;
       </Dialog>
 
       {/* Share Dialog */}
-      <Dialog open={!!showShareFor || !!shareBlog || !!shareEvent} onOpenChange={() => { setShowShareFor(null); setShareBlog(null); setShareEvent(null); }}>
+      <Dialog
+        open={!!showShareFor || !!shareBlog || !!shareEvent}
+        onOpenChange={() => {
+          setShowShareFor(null);
+          setShareBlog(null);
+          setShareEvent(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Share Post</DialogTitle>
           </DialogHeader>
           {showShareFor && (
             <div className="space-y-4">
-                          <div className="text-sm">Choose how to share:</div>
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <Button
-                              onClick={() => {
-                                alert("Shared inside chat!");
-                                setShareBlog(null);
-                              }}
-                            >
-                              Share to Chat
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                shareToWhatsApp(shareBlog);
-                                setShareBlog(null);
-                              }}
-                            >
-                              WhatsApp
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                copyLink(shareBlog);
-                                setShareBlog(null);
-                              }}
-                            >
-                              Copy Link
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                if (navigator.share) {
-                                  navigator.share({
-                                    title: shareBlog.title,
-                                    url: window.location.href + "#" + shareBlog.id,
-                                  });
-                                } else {
-                                  alert("Native share not supported");
-                                }
-                                setShareBlog(null);
-                              }}
-                            >
-                              Native Share
-                            </Button>
-                          </div>
-                        </div>
+              <div className="text-sm">Choose how to share:</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => {
+                    alert("Shared inside chat!");
+                    setShareBlog(null);
+                  }}
+                >
+                  Share to Chat
+                </Button>
+                <Button
+                  onClick={() => {
+                    shareToWhatsApp(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => {
+                    copyLink(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: shareBlog.title,
+                        url: window.location.href + "#" + shareBlog.id,
+                      });
+                    } else {
+                      alert("Native share not supported");
+                    }
+                    setShareBlog(null);
+                  }}
+                >
+                  Native Share
+                </Button>
+              </div>
+            </div>
           )}
           {shareBlog && (
-           <div className="space-y-4">
-                         <div className="text-sm">Choose how to share:</div>
-                         <div className="flex flex-col sm:flex-row gap-2">
-                           <Button
-                             onClick={() => {
-                               alert("Shared inside chat!");
-                               setShareBlog(null);
-                             }}
-                           >
-                             Share to Chat
-                           </Button>
-                           <Button
-                             onClick={() => {
-                               shareToWhatsApp(shareBlog);
-                               setShareBlog(null);
-                             }}
-                           >
-                             WhatsApp
-                           </Button>
-                           <Button
-                             onClick={() => {
-                               copyLink(shareBlog);
-                               setShareBlog(null);
-                             }}
-                           >
-                             Copy Link
-                           </Button>
-                           <Button
-                             onClick={() => {
-                               if (navigator.share) {
-                                 navigator.share({
-                                   title: shareBlog.title,
-                                   url: window.location.href + "#" + shareBlog.id,
-                                 });
-                               } else {
-                                 alert("Native share not supported");
-                               }
-                               setShareBlog(null);
-                             }}
-                           >
-                             Native Share
-                           </Button>
-                         </div>
-                       </div>
+            <div className="space-y-4">
+              <div className="text-sm">Choose how to share:</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => {
+                    alert("Shared inside chat!");
+                    setShareBlog(null);
+                  }}
+                >
+                  Share to Chat
+                </Button>
+                <Button
+                  onClick={() => {
+                    shareToWhatsApp(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => {
+                    copyLink(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: shareBlog.title,
+                        url: window.location.href + "#" + shareBlog.id,
+                      });
+                    } else {
+                      alert("Native share not supported");
+                    }
+                    setShareBlog(null);
+                  }}
+                >
+                  Native Share
+                </Button>
+              </div>
+            </div>
           )}
           {shareEvent && (
             <div className="space-y-4">
-                          <div className="text-sm">Choose how to share:</div>
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <Button
-                              onClick={() => {
-                                alert("Shared inside chat!");
-                                setShareBlog(null);
-                              }}
-                            >
-                              Share to Chat
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                shareToWhatsApp(shareBlog);
-                                setShareBlog(null);
-                              }}
-                            >
-                              WhatsApp
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                copyLink(shareBlog);
-                                setShareBlog(null);
-                              }}
-                            >
-                              Copy Link
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                if (navigator.share) {
-                                  navigator.share({
-                                    title: shareBlog.title,
-                                    url: window.location.href + "#" + shareBlog.id,
-                                  });
-                                } else {
-                                  alert("Native share not supported");
-                                }
-                                setShareBlog(null);
-                              }}
-                            >
-                              Native Share
-                            </Button>
-                          </div>
-                        </div>
+              <div className="text-sm">Choose how to share:</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => {
+                    alert("Shared inside chat!");
+                    setShareBlog(null);
+                  }}
+                >
+                  Share to Chat
+                </Button>
+                <Button
+                  onClick={() => {
+                    shareToWhatsApp(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => {
+                    copyLink(shareBlog);
+                    setShareBlog(null);
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: shareBlog.title,
+                        url: window.location.href + "#" + shareBlog.id,
+                      });
+                    } else {
+                      alert("Native share not supported");
+                    }
+                    setShareBlog(null);
+                  }}
+                >
+                  Native Share
+                </Button>
+              </div>
+            </div>
           )}
           <DialogFooter>
-            <Button variant="secondary" onClick={() => { setShowShareFor(null); setShareBlog(null); setShareEvent(null); }}>Close</Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowShareFor(null);
+                setShareBlog(null);
+                setShareEvent(null);
+              }}
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Calendar Modal */}
-      <Dialog open={!!calendarEvent} onOpenChange={() => setCalendarEvent(null)}>
+      <Dialog
+        open={!!calendarEvent}
+        onOpenChange={() => setCalendarEvent(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add to Calendar</DialogTitle>
           </DialogHeader>
           {calendarEvent && (
             <div className="flex flex-col gap-2">
-              <Button size="sm" onClick={() => window.open(getCalendarLinks(calendarEvent).google, "_blank")}>Google Calendar</Button>
-              <Button size="sm" onClick={() => window.open(getCalendarLinks(calendarEvent).outlook, "_blank")}>Outlook / Microsoft</Button>
-              <Button size="sm" onClick={() => window.open(getCalendarLinks(calendarEvent).yahoo, "_blank")}>Yahoo Calendar</Button>
-              <Button size="sm" onClick={() => { const a = document.createElement("a"); a.href = getCalendarLinks(calendarEvent).ics; a.download = `${calendarEvent.title}.ics`; a.click(); URL.revokeObjectURL(a.href); }}>Apple / ICS File</Button>
+              <Button
+                size="sm"
+                onClick={() =>
+                  window.open(getCalendarLinks(calendarEvent).google, "_blank")
+                }
+              >
+                Google Calendar
+              </Button>
+              <Button
+                size="sm"
+                onClick={() =>
+                  window.open(getCalendarLinks(calendarEvent).outlook, "_blank")
+                }
+              >
+                Outlook / Microsoft
+              </Button>
+              <Button
+                size="sm"
+                onClick={() =>
+                  window.open(getCalendarLinks(calendarEvent).yahoo, "_blank")
+                }
+              >
+                Yahoo Calendar
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  const a = document.createElement("a");
+                  a.href = getCalendarLinks(calendarEvent).ics;
+                  a.download = `${calendarEvent.title}.ics`;
+                  a.click();
+                  URL.revokeObjectURL(a.href);
+                }}
+              >
+                Apple / ICS File
+              </Button>
             </div>
           )}
         </DialogContent>
