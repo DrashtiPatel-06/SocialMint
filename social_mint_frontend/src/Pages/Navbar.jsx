@@ -6,9 +6,16 @@ import {
   FileText,
   Calendar,
   MessageCircle,
-  User,
+  Plus
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 export default function Navbar() {
   const location = useLocation();
@@ -58,6 +65,25 @@ export default function Navbar() {
 
           {/* Profile */}
           <div className="flex items-center space-x-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="rounded-full w-10 h-10 p-0 flex items-center justify-center bg-black text-white hover:bg-gray-800 cursor-pointer">
+                  <Plus className="size-6" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-30">
+                <DropdownMenuItem asChild>
+                  <Link to="/insert-nft"> Insert NFT</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/insert-event">Insert Event</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/insert-blog"> Insert Blog</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Link to="/profile" className="flex items-center space-x-2">
               <Avatar className="border-white border-2 size-10">
                 <AvatarImage src="https://github.com/shadcn.png" />
